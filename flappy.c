@@ -10,8 +10,8 @@
 #define WIDTH 100
 int nic = 0;
 int TOWER_1 = 0;
-int TOWER_2 = WIDTH - 10;
-int TOWER_3 = WIDTH - 30;
+int TOWER_2 = WIDTH - 20;
+int TOWER_3 = WIDTH - 40;
 
 int kbhit(void)
 {
@@ -88,21 +88,21 @@ bool colision(int bird, int random_1, int random_2, int random_3)
     }
 
     if (TOWER_1 == WIDTH / 3 - 9) {
-        if (bird >= random_1 && bird <= random_1 + 5) {
+        if (bird >= random_1 -1 && bird <= random_1 + 5) {
             nic++;
         } else {
             return true;
         }
     }
     if (TOWER_2 == WIDTH / 3 - 9) {
-        if (bird >= random_2 && bird <= random_2 + 5) {
+        if (bird >= random_2 -1&& bird <= random_2 + 5) {
             nic++;
         } else {
             return true;
         }
     }
     if (TOWER_3 == WIDTH / 3 - 9) {
-        if (bird >= random_3 && bird <= random_3 + 5) {
+        if (bird >= random_3 -1 && bird <= random_3 + 5) {
             nic++;
         } else {
             return true;
@@ -117,9 +117,9 @@ int main()
     initscr();
     noecho();
     curs_set(FALSE);
-    int random_1;
-    int random_2;
-    int random_3;
+    int random_1 = 10;
+    int random_2 = 12;
+    int random_3 = 15;
 
     WINDOW* win = newwin(HIGHT, WIDTH, 1, 1);
     keypad(win, TRUE);
