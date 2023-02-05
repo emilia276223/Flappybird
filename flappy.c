@@ -8,8 +8,10 @@
 #define SPEED 10
 #define HIGHT 30
 #define WIDTH 100
-
-int TIME = 0;
+int nic = 0;
+int TOWER_1 = 0;
+int TOWER_2 = WIDTH - 10;
+int TOWER_3 = WIDTH - 30;
 
 int kbhit(void)
 {
@@ -30,26 +32,53 @@ int kbhit(void)
     return 0;
 }
 
-int tower_generator(WINDOW* win, int* random)
+int tower_generator(WINDOW* win, int* random_1, int* random_2, int* random_3)
 {
-    if (TIME <= 0) {
+    if (TOWER_1 <= 0) {
         srand(time(0));
-        *random = rand() % (HIGHT - 10) + 2;
-        TIME = WIDTH - 1;
+        *random_1 = rand() % (HIGHT - 10) + 2;
+        TOWER_1 = WIDTH - 1;
     }
-    for (int i = 0; i < *random; i++) {
-        mvwaddstr(win, i, TIME, "#");
+    for (int i = 0; i < *random_1; i++) {
+        mvwaddstr(win, i, TOWER_1, "#");
         refresh();
     }
-    for (int i = *random + 5; i < HIGHT - 1; i++) {
-        mvwaddstr(win, i, TIME, "#");
+    for (int i = *random_1 + 5; i < HIGHT - 1; i++) {
+        mvwaddstr(win, i, TOWER_1, "#");
         refresh();
     }
-
-    TIME--;
+    TOWER_1--;
+    if (TOWER_2 <= 0) {
+        srand(time(0));
+        *random_2 = rand() % (HIGHT - 10) + 2;
+        TOWER_2 = WIDTH - 1;
+    }
+    for (int i = 0; i < *random_2; i++) {
+        mvwaddstr(win, i, TOWER_2, "#");
+        refresh();
+    }
+    for (int i = *random_2 + 5; i < HIGHT - 1; i++) {
+        mvwaddstr(win, i, TOWER_2, "#");
+        refresh();
+    }
+    TOWER_2--;
+    if (TOWER_3 <= 0) {
+        srand(time(0));
+        *random_3 = rand() % (HIGHT - 10) + 2;
+        TOWER_3 = WIDTH - 1;
+    }
+    for (int i = 0; i < *random_3; i++) {
+        mvwaddstr(win, i, TOWER_3, "#");
+        refresh();
+    }
+    for (int i = *random_3 + 5; i < HIGHT - 1; i++) {
+        mvwaddstr(win, i, TOWER_3, "#");
+        refresh();
+    }
+    TOWER_3--;
 }
 
-bool colision(int bird)
+bool colision(int bird, int random_1, int random_2, int random_3)
 {
     if (bird >= HIGHT - 1) {
         return true;
@@ -57,6 +86,29 @@ bool colision(int bird)
     if (bird <= 0) {
         return true;
     }
+
+    if (TOWER_1 == WIDTH / 3 - 9) {
+        if (bird >= random_1 && bird <= random_1 + 5) {
+            nic++;
+        } else {
+            return true;
+        }
+    }
+    if (TOWER_2 == WIDTH / 3 - 9) {
+        if (bird >= random_2 && bird <= random_2 + 5) {
+            nic++;
+        } else {
+            return true;
+        }
+    }
+    if (TOWER_3 == WIDTH / 3 - 9) {
+        if (bird >= random_3 && bird <= random_3 + 5) {
+            nic++;
+        } else {
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -65,7 +117,9 @@ int main()
     initscr();
     noecho();
     curs_set(FALSE);
-    int random;
+    int random_1;
+    int random_2;
+    int random_3;
 
     WINDOW* win = newwin(HIGHT, WIDTH, 1, 1);
     keypad(win, TRUE);
@@ -82,7 +136,7 @@ int main()
     while (1) {
         werase(win);
         mvwaddstr(win, bird, WIDTH / 3 - 9, "O");
-        tower_generator(win, &random);
+        tower_generator(win, &random_1, &random_2, &random_3);
         box(win, 0, 0);
         wrefresh(win);
 
@@ -107,7 +161,7 @@ int main()
         }
         action = 's';
         usleep(1000000 / SPEED);
-        if (colision(bird)) {
+        if (colision(bird, random_1, random_2, random_3)) {
             mvwprintw(win, 10, 10, "GAME OVER");
             wrefresh(win);
             break;
