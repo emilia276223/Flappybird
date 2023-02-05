@@ -9,6 +9,8 @@
 #define HIGHT 30
 #define WIDTH 100
 
+int TIME = 0;
+
 int kbhit(void)
 {
     struct timeval tv;
@@ -28,6 +30,25 @@ int kbhit(void)
     return 0;
 }
 
+int tower_generator(WINDOW* win, int* random)
+{
+    if (TIME <= 0) {
+        srand(time(0));
+        *random = rand() % (HIGHT - 10) + 2;
+        TIME = WIDTH - 1;
+    }
+    for (int i = 0; i < *random; i++) {
+        mvwaddstr(win, i, TIME, "#");
+        refresh();
+    }
+    for (int i = *random + 5; i < HIGHT - 1; i++) {
+        mvwaddstr(win, i, TIME, "#");
+        refresh();
+    }
+
+    TIME--;
+}
+
 bool colision(int bird)
 {
     if (bird >= HIGHT - 1) {
@@ -44,6 +65,7 @@ int main()
     initscr();
     noecho();
     curs_set(FALSE);
+    int random;
 
     WINDOW* win = newwin(HIGHT, WIDTH, 1, 1);
     keypad(win, TRUE);
@@ -60,6 +82,7 @@ int main()
     while (1) {
         werase(win);
         mvwaddstr(win, bird, WIDTH / 3 - 9, "O");
+        tower_generator(win, &random);
         box(win, 0, 0);
         wrefresh(win);
 
@@ -72,7 +95,7 @@ int main()
                 action = wgetch(win);
             }
             if (action == ' ') {
-                jump = 5;
+                jump = 4;
             }
         }
         if (jump > 0) {
@@ -84,16 +107,15 @@ int main()
         }
         action = 's';
         usleep(1000000 / SPEED);
-        if(colision(bird)) {
+        if (colision(bird)) {
             mvwprintw(win, 10, 10, "GAME OVER");
             wrefresh(win);
-            //endwin();
             break;
         }
     }
-    
+
     char end = 's';
-    while(end != '\n') {
+    while (end != '\n') {
         end = getch();
     }
     clear();
