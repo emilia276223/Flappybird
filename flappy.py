@@ -36,10 +36,16 @@ class Board():
 	def __init__(self):
 		self.TOWERS = []
 
-		new = []
-		new.append(WIDTH - 10)
-		new.append(random.randint(40, HIGHT - 130))
-		self.TOWERS.append(new)
+		first = []
+		first.append(WIDTH - 10)
+		first.append(random.randint(40, HIGHT - 130))
+		# self.TOWERS.append(first)
+
+		second = []
+		second.append(WIDTH - 360)
+		second.append(random.randint(max(40, first[1] - 200), min((HIGHT - 130), first[1] + 200)))
+		self.TOWERS.append(second)
+		self.TOWERS.append(first)
 
 		self.BIRD_COLOR = (220, 50, 120)
 		self.bird_appearance = pg.Rect(BIRD_COL, 0, 10, 10)
