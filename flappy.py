@@ -1,10 +1,16 @@
 import pygame as pg
 import random
 
-HIGHT = 900
+SIZE = HIGHT, WIDTH = (900, 1500)
 SPEED = 10
-WIDTH = 1500
 BIRD_COL = WIDTH / 3 - 9
+MAX_HEIGHT_DIFFERENCE = 200
+BIRD_HEIGHT = 30
+BIRD_WIDTH = 30
+TOWER_SPACE = BIRD_HEIGHT * 2 + 70
+TOWER_DIFFERENCE = 350
+BIRD_MOVE = 10
+
 
 class Bird():
 	def __init__(self):
@@ -26,8 +32,8 @@ class Bird():
 			if keys[pg.K_SPACE]:
 				self.jump = 4
 
-		if self.jump > 0: self.hight -= 10
-		else: self.hight += 10
+		if self.jump > 0: self.hight -= BIRD_MOVE
+		else: self.hight += BIRD_MOVE
 
 		self.sleep()
 
@@ -38,44 +44,57 @@ class Board():
 
 		first = []
 		first.append(WIDTH - 10)
-		first.append(random.randint(40, HIGHT - 130))
-		# self.TOWERS.append(first)
+		first.append(random.randint(40, HIGHT - 40 - TOWER_SPACE))
 
 		second = []
-		second.append(WIDTH - 360)
-		second.append(random.randint(max(40, first[1] - 200), min((HIGHT - 130), first[1] + 200)))
+		second.append(WIDTH - 10 - TOWER_DIFFERENCE)
+		second.append(random.randint(max(40, first[1] - MAX_HEIGHT_DIFFERENCE), min((HIGHT - 130), first[1] + MAX_HEIGHT_DIFFERENCE)))
 		self.TOWERS.append(second)
 		self.TOWERS.append(first)
 
-		self.BIRD_COLOR = (220, 50, 120)
-		self.bird_appearance = pg.Rect(BIRD_COL, 0, 10, 10)
+		#images
+		self.bird_1 = pg.image.load("duck_3_1.png")
+		self.bird_1_location = self.bird_1.get_rect()
+		self.bird_1_location = (BIRD_COL, HIGHT / 2)
+		self.bird_2 = pg.image.load("duck_3_2.png")
+		self.bird_2_location = self.bird_2.get_rect()
+		self.bird_2_location = (BIRD_COL, HIGHT / 2)
+		self.bird_type = 1
+
+		self.background = pg.image.load("Flappy_bird_background.png")
+		self.game_over_screen = pg.image.load("GAME_OVER.png")
 
 		self.TOWER_COLOR = (30, 200, 30)
 		self.TOWER_WIDTH = 40
 		self.brick = pg.Rect(0,0,self.TOWER_WIDTH, 10)
 		
 		self.screen = pg.display.set_mode((WIDTH,HIGHT))
-
-		self.space = 90
+		pg.display.set_caption("Flappy bird")
 
 	def draw_box(self):
-		pass
+		self.screen.blit(self.background, (0,0))
 
 	def draw_brick(self, x, y):
 		self.brick.x = x
 		self.brick.y = y
 		pg.draw.rect(self.screen,self.TOWER_COLOR, self.brick)
 
-	def draw_rest(self, bird_h):
-		self.screen.fill((40, 40, 40))
+	def draw_bird(self, new_bird_h):
 
+		if(self.bird_type == 1):
+			self.bird_1_location = (BIRD_COL, new_bird_h)
+			self.screen.blit(self.bird_1, self.bird_1_location)
+
+		else:
+			self.bird_2_location = (BIRD_COL, new_bird_h)
+			self.screen.blit(self.bird_2, self.bird_2_location)
+
+	def draw_rest(self, new_bird_h):
 		self.draw_box()
 		self.tower_generator()
-
-		self.bird_appearance.y = bird_h
-		pg.draw.rect(self.screen, self.BIRD_COLOR, self.bird_appearance)
-
-		pg.display.flip()
+		self.draw_bird(new_bird_h)
+		
+		pg.display.update()
 
 	def tower_generator(self):
 
@@ -83,16 +102,16 @@ class Board():
 		
 		# byc moze wygenerowanie nowej
 		last = self.TOWERS[-1]
-		if last[0] <= WIDTH - 350:
+		if last[0] <= WIDTH - TOWER_DIFFERENCE:
 			#wygenerowanie nowej
 			new = []
 			new.append(WIDTH - 10)
-			new_place = random.randint(40, HIGHT - 90)
-			if new_place > last[1] + 200:
-				new_place = last[1] + 200
+			new_place = random.randint(40, HIGHT - 40 - TOWER_SPACE)
+			if new_place > last[1] + MAX_HEIGHT_DIFFERENCE:
+				new_place = last[1] + MAX_HEIGHT_DIFFERENCE
 
-			if new_place < last[1] - 200:
-				new_place = last[1] - 200
+			if new_place < last[1] - MAX_HEIGHT_DIFFERENCE:
+				new_place = last[1] - MAX_HEIGHT_DIFFERENCE
 
 			new.append(new_place)
 			self.TOWERS.append(new)
@@ -100,7 +119,7 @@ class Board():
 		#wyswietlenie
 		for tower in self.TOWERS:
 			for i in range(0, tower[1], 10): self.draw_brick(tower[0], i)
-			for i in range(tower[1] + self.space, HIGHT - 10, 10): self.draw_brick(tower[0], i)
+			for i in range(tower[1] + TOWER_SPACE, HIGHT - 10, 10): self.draw_brick(tower[0], i)
 		
 
 	def collision(self, bird_h):
@@ -108,11 +127,16 @@ class Board():
 		if bird_h <= 0: return True
 
 		for tower in self.TOWERS:
-			if tower[0] <= BIRD_COL + 10 and tower[0] + self.TOWER_WIDTH >= BIRD_COL:
-				if bird_h <= tower[1] or bird_h >= tower[1] + self.space:
+			if tower[0] <= BIRD_COL + BIRD_WIDTH and tower[0] + self.TOWER_WIDTH >= BIRD_COL:
+				if bird_h <= tower[1] or bird_h >= tower[1] + TOWER_SPACE - BIRD_HEIGHT:
 					return True
 			
 		return False
+	
+	def game_over(self):
+		self.screen.blit(self.game_over_screen, (0, 0))
+		pg.display.update()
+		
 
 	
 class Game():
@@ -123,25 +147,38 @@ class Game():
 		
 	def play(self):
 		x = 0
-		while True:
+		keep_playing = True
+		while keep_playing:
 			x += 1
+
+			if(x % 5 == 0):
+				self.board.bird_type += 1
+				self.board.bird_type %= 2
+
 			if x > 50:
 				self.bird.speed += 0.1
 				x = 0			
 
 			for event in pg.event.get():# sprawdzamy czy cos sie wydarzylo
 				if event.type == pg.QUIT: #umozliwienie zamnkniecia okna
-					pg.quit()
-					exit()
+					keep_playing = False
 
 			self.board.draw_rest(self.bird.hight)
 			self.bird.make_move()
 
 			if self.board.collision(self.bird.hight):
-				print("GAME OVER")
-				pg.quit()
-				exit()
-				return
+				self.board.game_over()
+				keep_playing = False
+			
+		wait = True
+		while  wait:
+			for event in pg.event.get():# sprawdzamy czy cos sie wydarzylo
+				if event.type == pg.QUIT: #umozliwienie zamnkniecia okna
+					wait = False
+
+		pg.quit()
+		exit()
+		return
 
 new_game = Game()
 new_game.play()
